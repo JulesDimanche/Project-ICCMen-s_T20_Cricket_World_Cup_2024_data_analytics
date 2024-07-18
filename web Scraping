@@ -1,0 +1,223 @@
+# Result
+import requests
+import openpyxl
+from bs4 import BeautifulSoup
+import re
+sheet=openpyxl.Workbook()
+excel=sheet.active
+excel.title='Result'
+excel.append(['Team1','Team2','Winner','Margin','Ground','Date','Match id'])
+res = requests.get('https://www.espncricinfo.com/records/season/team-match-results/2024-2024?trophy=89')
+sup = BeautifulSoup(res.text,"html.parser")
+Matches=sup.find('div',class_='ds-overflow-x-auto ds-scrollbar-hide').find_all('tr')
+first_row = True
+for match in Matches:
+  Team1=match.find('td',class_='ds-min-w-max').span.text
+  Team2=match.find('td',class_='ds-min-w-max ds-text-right').span.text
+  Winner=match.find('td',class_='ds-min-w-max ds-text-right').findNext('td').span.text
+  Margin=match.find('td',class_='ds-min-w-max ds-text-right').findNext('td').findNext('td').span.text
+  Ground=match.find('td',class_='ds-min-w-max ds-text-right').findNext('td').findNext('td').findNext('td').span.text
+  Date=match.find('td',class_='ds-min-w-max ds-text-right ds-whitespace-nowrap').span.text
+  match_id=match.find('td',class_='ds-min-w-max ds-text-right').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').span.text
+  if not first_row:
+        print(Team1,Team2,Winner,Margin,Ground,Date,match_id)
+        excel.append([Team1,Team2,Winner,Margin,Ground,Date,match_id])
+        sheet.save('Result.xlsx')
+  first_row = False
+# Batting Summary
+import requests
+import openpyxl
+from bs4 import BeautifulSoup
+sheet=openpyxl.Workbook()
+excel=sheet.active
+excel.title='Result'
+excel.append(['Teams','Batter','Runs','Balls','Fours','Sixers','Strike Rate','Out_NotOut','Match id'])
+res1 = requests.get('https://www.espncricinfo.com/records/season/team-match-results/2024-2024?trophy=89')
+sup = BeautifulSoup(res1.text,"html.parser")
+import re
+urls = []
+for link in sup.find_all('a'):
+  url=link.get('href')
+  urls.append(url)
+pattern = re.compile(r'.*icc-men-s-t20-world-cup-2024.*scorecard$')
+base_url = 'https://www.espncricinfo.com'
+scorecard_urls = [base_url + url for url in urls if pattern.match(url)]
+for url in scorecard_urls:
+  res1 = requests.get(url)
+  sup1 = BeautifulSoup(res1.text,"html.parser")
+  Teamvs=sup1.find('div',class_='ds-grow')
+  Scores=sup1.find_all('tr')
+  var=sup1.find_all('td',class_='ds-text-typo')
+  pattern = re.compile(r'T20I no\. \d+')
+  for a in var:
+    if a.span:
+      match=pattern.search(a.text)
+      if match :
+        match_id=match.group()
+        break
+  for score in Scores:
+    bat=score.find('span',class_='ds-text-tight-s')
+    run=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right ds-text-typo')
+    ball=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    four=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    six=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    sr=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    Out_Notout=score.find('td',class_='ds-min-w-max !ds-pl-[100px]')
+    if run:
+      batsmen=bat.span.text
+      runs=run.text
+      balls=ball.text
+      if Out_Notout.span:
+        Out_NotOut=1
+      else:
+        Out_NotOut=0
+      fours=four.findNext('td').findNext('td').text
+      sixs=six.findNext('td').findNext('td').findNext('td').text
+      strike=sr.findNext('td').findNext('td').findNext('td').findNext('td').text
+      print(Teamvs.h1.text.split(',')[0],batsmen,runs,balls,fours,sixs,strike,Out_NotOut,match_id)
+      excel.append([Teamvs.h1.text,batsmen,runs,balls,fours,sixs,strike,Out_NotOut,match_id])
+      sheet.save('Batting Summary.xlsx')
+# Bowling Summary
+import requests
+import openpyxl
+from bs4 import BeautifulSoup
+import re
+sheet=openpyxl.Workbook()
+excel=sheet.active
+excel.title='Result'
+excel.append(['Teams','bowler','over','madien','run','wicket','economy','Zeros','Fours','Sixers','wide','no ball','Match id'])
+res1 = requests.get('https://www.espncricinfo.com/records/season/team-match-results/2024-2024?trophy=89')
+sup = BeautifulSoup(res1.text,"html.parser")
+urls = []
+for link in sup.find_all('a'):
+  url=link.get('href')
+  urls.append(url)
+pattern = re.compile(r'.*icc-men-s-t20-world-cup-2024.*scorecard$')
+base_url = 'https://www.espncricinfo.com'
+scorecard_urls = [base_url + url for url in urls if pattern.match(url)]
+for url in scorecard_urls:
+  res1 = requests.get(url)
+  sup1 = BeautifulSoup(res1.text,"html.parser")
+  Teamvs=sup1.find('div',class_='ds-grow')
+  Scores=sup1.find_all('tr')
+  var=sup1.find_all('td',class_='ds-text-typo')
+  pattern = re.compile(r'T20I no\. \d+')
+  for a in var:
+    if a.span:
+      match=pattern.search(a.text)
+      if match :
+        match_id=match.group()
+        break
+  #print(Scores)
+  for score in Scores:
+    bowler=score.find('td',class_='ds-flex ds-items-center')
+    over=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    madien=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    run=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    wicket=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    eco=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    zero=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    four=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    six=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    wd=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+    nb=score.find('td',class_='ds-w-0 ds-whitespace-nowrap ds-min-w-max ds-text-right')
+
+    if bowler:
+      bowlers=bowler.span.text
+      overs=over.text
+      madiens=madien.findNext('td').text
+      runs=run.findNext('td').findNext('td').text
+      wickets=wicket.findNext('td').findNext('td').findNext('td').text
+      economy=eco.findNext('td').findNext('td').findNext('td').findNext('td').text
+      zeros=zero.findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').text
+      fours=four.findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').text
+      sixers=six.findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').text
+      wide=wd.findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').text
+      noball=nb.findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').findNext('td').text
+      print(Teamvs.h1.text.split(',')[0],bowlers,overs,madiens,runs,wickets,economy,zeros,fours,sixers,wide,noball,match_id)
+      excel.append([Teamvs.h1.text.split(',')[0],bowlers,overs,madiens,runs,wickets,economy,zeros,fours,sixers,wide,noball,match_id])
+      sheet.save('Bowling Summary.xlsx')
+# Team Summary
+import requests
+import openpyxl
+from bs4 import BeautifulSoup
+import re
+sheet=openpyxl.Workbook()
+excel=sheet.active
+excel.title='Team Summary'
+excel.append(['Player','position','Batting','Bowling','image'])
+res1_ = requests.get('https://www.espncricinfo.com/series/icc-men-s-t20-world-cup-2024-1411166/squads')
+sup = BeautifulSoup(res1_.text,"html.parser")
+urls = []
+for link in sup.find_all('a'):
+  url=link.get('href')
+  urls.append(url)
+pattern = re.compile(r'.*icc-men-s-t20-world-cup-2024.*series-squads$')
+base_url = 'https://www.espncricinfo.com'
+squad_urls = [base_url + url for url in urls if pattern.match(url)]
+#print(squad_urls)
+for url in squad_urls:
+  res2_=requests.get(url)
+  sup1=BeautifulSoup(res2_.text,'html.parser')
+  links=sup1.find('div',class_='ds-grid lg:ds-grid-cols-2')
+  base_url = 'https://www.espncricinfo.com'
+  for link in links:
+    name=link.find('div',class_='ds-flex ds-space-x-2').find('span').text
+    pos=link.find('p',class_='ds-text-tight-s ds-font-regular ds-mb-2 ds-mt-1').text
+    batting=link.find('div',class_='ds-flex ds-items-start ds-space-x-1').find('span',class_='ds-text-compact-xxs ds-font-bold').text
+    img=link.find('div',class_='ds-relative ds-flex ds-flex-row ds-space-x-4 ds-p-3').find('a').get('href')
+    img_link=base_url + img
+    res2_0=requests.get(img_link)
+    sup=BeautifulSoup(res2_0.text,'html.parser')
+    img_l=sup.find('div',class_='ds-p-0').find('div',class_='ds-ml-auto ds-w-48 ds-h-48')
+    bowling=link.find('div',class_='ds-flex ds-items-start ds-space-x-1').findNext('div').find('span',class_='ds-text-compact-xxs ds-font-bold').text.split(',')[0]
+    if img_l:
+      img_link=img_l.img['src']
+      print(name,pos,batting,bowling,img_link)
+    else:
+      img_link=None
+      print(name,pos,batting,bowling,img_link)
+    excel.append([name,pos,batting,bowling,img_link])
+    sheet.save('Team summary.xlsx')
+  links=sup1.find('div',class_='ds-grid lg:ds-grid-cols-2').findNext('div',class_='ds-grid lg:ds-grid-cols-2')
+  for link in links:
+    name1=link.find('div',class_='ds-flex ds-space-x-2').findNext('div').find('span').text
+    pos1=link.find('p',class_='ds-text-tight-s ds-font-regular ds-mb-2 ds-mt-1').text
+    batting1=link.find('div',class_='ds-flex ds-items-start ds-space-x-1').find('span',class_='ds-text-compact-xxs ds-font-bold').text
+    img1=link.find('div',class_='ds-relative ds-flex ds-flex-row ds-space-x-4 ds-p-3').find('a').get('href')
+    img_link1=base_url + img1
+    res2_1=requests.get(img_link1)
+    sup=BeautifulSoup(res2_1.text,'html.parser')
+    img_l1=sup.find('div',class_='ds-p-0')
+    bowling1=link.find('div',class_='ds-flex ds-items-start ds-space-x-1').findNext('div').find('span',class_='ds-text-compact-xxs ds-font-bold').text.split(',')[0]
+    if img_l1:
+      img_link_1=img_l1.find('div',class_='ds-ml-auto ds-w-48 ds-h-48')
+      if img_link_1:
+        img_main1=img_link_1.img['src']
+      else:
+        img_main1=None
+    else:
+      img_main1=None
+      print(name1,pos1,batting1,bowling1,img_main1)
+    excel.append([name1,pos1,batting1,bowling1,img_main1])
+    sheet.save('Team summary.xlsx')
+  links=sup1.find('div',class_='ds-grid lg:ds-grid-cols-2').findNext('div',class_='ds-grid lg:ds-grid-cols-2').findNext('div',class_='ds-grid lg:ds-grid-cols-2')
+  for link in links:
+    name2=link.find('div',class_='ds-flex ds-space-x-2').findNext('div').find('span').text
+    pos2=link.find('p',class_='ds-text-tight-s ds-font-regular ds-mb-2 ds-mt-1').text
+    batting_ele2=link.find('div',class_='ds-flex ds-items-start ds-space-x-1')
+    batting2=batting_ele2.find('span',class_='ds-text-compact-xxs ds-font-bold').text if batting_ele2 else None
+    img2=link.find('div',class_='ds-relative ds-flex ds-flex-row ds-space-x-4 ds-p-3').find('a').get('href')
+    img_link2=base_url + img2
+    res2_2=requests.get(img_link2)
+    sup=BeautifulSoup(res2_2.text,'html.parser')
+    img_l2=sup.find('div',class_='ds-p-0').find('div',class_='ds-ml-auto ds-w-48 ds-h-48')
+    bowling_ele2=link.find('div',class_='ds-flex ds-items-start ds-space-x-1')
+    bowling2=bowling_ele2.findNext('div').find('span',class_='ds-text-compact-xxs ds-font-bold').text.split(',')[0] if bowling_ele2 else None
+    if img_l2 and img_l2.img:
+      img_link2=img_l2.img['src']
+    else:
+      img_main2=None
+    print(name2,pos2,batting2,bowling2,img_link2)
+    excel.append([name2,pos2,batting2,bowling2,img_link2])
+    sheet.save('Team summary.xlsx')
